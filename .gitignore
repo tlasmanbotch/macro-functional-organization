@@ -1,3 +1,6 @@
+# Apple generated files
+.DS_Store
+
 # HCP Datafiles
 hcp/*
 
