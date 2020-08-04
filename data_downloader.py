@@ -7,6 +7,7 @@
 #Written by TLB 2020
 
 import os, sys, requests, tarfile
+import shutil
 from tqdm import tqdm #for monitoring download progress
 
 def download_preprocessed_hcp(dataset_dict, download_dir):
@@ -23,27 +24,55 @@ def download_preprocessed_hcp(dataset_dict, download_dir):
 		fname, weblink = info
 		download_path = f'{download_dir}/{fname}'
 
-		if not os.path.exists(download_path): #grab the data file from the OSF weblink
+		# if not os.path.exists(download_path): #grab the data file from the OSF weblink
 
-			response = requests.get(f'{weblink}', stream=True)
+		# 	response = requests.get(f'{weblink}', stream=True)
 
-			total_size = int(response.headers.get('content-length', 0))
-			block_size = 1024 #1 Kibibyte
+		# 	total_size = int(response.headers.get('content-length', 0))
+		# 	block_size = 1024 #1 Kibibyte
 
-			if response.status_code == 200:
-				print (f'Downloading {fname} to {download_path}')
-				with open(download_path, 'wb') as f:
-					with tqdm(total=total_size, unit='iB', unit_scale=True) as pbar:
-						for data in response.iter_content(block_size):
-							pbar.update(len(data))
-							f.write(data)
+		# 	if response.status_code == 200:
+		# 		print (f'Downloading {fname} to {download_path}')
+		# 		with open(download_path, 'wb') as f:
+		# 			with tqdm(total=total_size, unit='iB', unit_scale=True) as pbar:
+		# 				for data in response.iter_content(block_size):
+		# 					pbar.update(len(data))
+		# 					f.write(data)
 
-				print (f'Extracting files for {fname}')
+		print (f'Extracting files for {fname}')
 
-				if 'tgz' in fname: #untar if tar file
-					tar = tarfile.open(download_path, "r:gz")
-					tar.extractall(path=download_dir)
-					tar.close()
+		if 'tgz' in fname: #untar if tar file
+			tar = tarfile.open(download_path, "r:gz")
+			tar.extractall(path=download_dir)
+			tar.close()
+
+			#python doesn't have a strip components argument
+			#reorganize dir
+			source = download_dir + '/' + fname.split('.')[0]
+			dest = download_dir + '/'
+
+			merge_folders(source, dest)
+			shutil.rmtree(source)
+
+
+def merge_folders(root_src_dir, root_dst_dir):
+	'''
+
+	Taken from https://lukelogbook.tech/2018/01/25/merging-two-folders-in-python/
+
+	Solves the problem shutil has w/ merging two dirs w/ same name
+	
+	'''
+	for src_dir, dirs, files in os.walk(root_src_dir):
+		dst_dir = src_dir.replace(root_src_dir, root_dst_dir, 1)
+		if not os.path.exists(dst_dir):
+			os.makedirs(dst_dir)
+		for file_ in files:
+			src_file = os.path.join(src_dir, file_)
+			dst_file = os.path.join(dst_dir, file_)
+			if os.path.exists(dst_file):
+				os.remove(dst_file)
+			shutil.copy(src_file, dst_dir)
 
 def download_data(HCP_DIR="./hcp", *argv):
 	'''
