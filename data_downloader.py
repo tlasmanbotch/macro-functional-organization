@@ -24,20 +24,20 @@ def download_preprocessed_hcp(dataset_dict, download_dir):
 		fname, weblink = info
 		download_path = f'{download_dir}/{fname}'
 
-		# if not os.path.exists(download_path): #grab the data file from the OSF weblink
+		if not os.path.exists(download_path): #grab the data file from the OSF weblink
 
-		# 	response = requests.get(f'{weblink}', stream=True)
+			response = requests.get(f'{weblink}', stream=True)
 
-		# 	total_size = int(response.headers.get('content-length', 0))
-		# 	block_size = 1024 #1 Kibibyte
+			total_size = int(response.headers.get('content-length', 0))
+			block_size = 1024 #1 Kibibyte
 
-		# 	if response.status_code == 200:
-		# 		print (f'Downloading {fname} to {download_path}')
-		# 		with open(download_path, 'wb') as f:
-		# 			with tqdm(total=total_size, unit='iB', unit_scale=True) as pbar:
-		# 				for data in response.iter_content(block_size):
-		# 					pbar.update(len(data))
-		# 					f.write(data)
+			if response.status_code == 200:
+				print (f'Downloading {fname} to {download_path}')
+				with open(download_path, 'wb') as f:
+					with tqdm(total=total_size, unit='iB', unit_scale=True) as pbar:
+						for data in response.iter_content(block_size):
+							pbar.update(len(data))
+							f.write(data)
 
 		print (f'Extracting files for {fname}')
 
